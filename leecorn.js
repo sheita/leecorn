@@ -21,6 +21,8 @@ var vitesse = 6;
 // Hauteur du trou des pipes
 var holeHeight = 200;
 
+var timeDraw = 0;
+
 // Préchargement
 
 function preload() {
@@ -38,7 +40,6 @@ function setup() {
   noStroke();
 
   // Propriétés du texte
-  textSize(20);
   textAlign(CENTER);
   textStyle(BOLD);
   fill(255);
@@ -71,8 +72,6 @@ function draw() {
     break;
 
   case 2: // Jeu
-    checkScore();
-    print(score);
     yLicorne = licorne.x(yLicorneTap);
     if (yLicorne>height+tailleFlap || yLicorne<0-tailleFlap) { 
       gameState = 3;
@@ -82,6 +81,15 @@ function draw() {
     pipe1.afficherPipe();
     pipe2.afficherPipe();
     pipe3.afficherPipe();
+    
+    checkScore();
+    textSize(50);
+    text(score, 95*width/100, 60);
+    
+    timeDraw += 1;
+    if(timeDraw % 40 == 0) {
+      holeHeight -= 1;
+    }
     
     pipe1.x -= vitesse;
     pipe2.x -= vitesse;
@@ -119,6 +127,7 @@ function draw() {
 
   case 3: // Perdu & Score
     image(perdu, width/2, height/3, width, height);
+    textSize(20);
     text('SCORE : ' + score, width/2, (15*height)/28);
     break;
   }
@@ -149,7 +158,8 @@ function touchStarted() {
     gameState = 1;
     xLicorne = width/5;
     yLicorne = height/2;
-    t=0
+    t=0;
+    timeDraw = 0;
     
     pipes = 1;
     pipe1.x = 200 + 600 * pipes;
@@ -188,9 +198,10 @@ function Pipe() {
   this.hole = Math.random() * ((height - holeHeight/2) - (holeHeight/2 + 20)) + (holeHeight/2 + 20);
   
   this.afficherPipe = function() {
+    fill(0);
     rect(this.x,0,50,this.hole-holeHeight/2);
-    
     rect(this.x,this.hole+holeHeight/2,50,height-this.hole-holeHeight/2);
+    fill(255);
   }
 }
 
