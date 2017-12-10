@@ -19,7 +19,8 @@ var pipes = 0;
 // Vitesse des pipes
 var vitesse = 6;
 // Hauteur du trou des pipes
-var holeHeight = 200;
+var holeHeightOriginal = 200;
+var holeHeight = holeHeightOriginal;
 
 var timeDraw = 0;
 
@@ -35,7 +36,7 @@ function preload() {
 // Affichage du programme
 
 function setup() {
-  createCanvas(800, 500); // Affichage de la fenêtre
+  createCanvas(800,500); // Affichage de la fenêtre
   imageMode(CENTER); // Centrage des images
   noStroke();
 
@@ -160,6 +161,7 @@ function touchStarted() {
     yLicorne = height/2;
     t=0;
     timeDraw = 0;
+    holeHeight = holeHeightOriginal;
     
     pipes = 1;
     pipe1.x = 200 + 600 * pipes;
@@ -194,7 +196,7 @@ var licorne = {
 
 function Pipe() {
   pipes += 1;
-  this.x = 200 + 600 * pipes;
+  this.x = 500 + 600 * pipes;
   this.hole = Math.random() * ((height - holeHeight/2) - (holeHeight/2 + 20)) + (holeHeight/2 + 20);
   
   this.afficherPipe = function() {
