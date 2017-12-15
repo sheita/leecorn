@@ -1,17 +1,14 @@
-// Déclaration des variables
-
-// Variable principale du jeu
 var game = {
   state: 0,
   time: 0,
-  numberOfPipes: 0,
-  speed: 6,
+  speed: 7,
   holeHeight: 200,
   score: 0,
   scoreStep: 1,
   timeWhenLost: 0,
   canClickAfterDeath: false,
   init: function() {
+    pipes.initPipes();
     this.time = 0;
     this.numberOfPipes = 0;
     licorne.x = width/5;
@@ -20,17 +17,15 @@ var game = {
     this.scoreStep = 1;
     this.holeHeight = 200;
     this.fullTime = 0;
-    this.canClickAfterDeath = false;
   },
   fullTime: 0,
   decreasingHoleHeight: function() {
-    if(game.fullTime % 90 == 0) {
+    if(game.fullTime % 60 == 0) {
       game.holeHeight -= 1;
     }
   } 
 }
 
-// Variable qui caractérise flappy leecorn
 var licorne = {
   x: 0,
   y: 0,
@@ -41,74 +36,65 @@ var licorne = {
   yLastTap: 0
 }
 
-// Variable qui vérifie le score et si le joueur a perdu ou non
 var check = {
   score: function() {
-    switch(game.scoreStep) {
-    case 1:
-      if(licorne.x > pipe1.x) {game.score += 1; game.scoreStep = 2;}
-      break;
-    case 2:
-      if(licorne.x > pipe2.x) {game.score += 1; game.scoreStep = 3;}
-      break;
-    case 3:
-      if(licorne.x > pipe3.x) {game.score += 1; game.scoreStep = 1;}
-      break;
+    if(licorne.x > pipes.pipes[0].x) {
+      game.score = pipes.pipes[0].number;
+    }
+  }
+}
+
+var pipes = {
+  numberOf: 0,
+  pipes: [],
+  initPipes: function() {
+    this.numberOf = 0;
+    this.pipes = [];
+    for (var i=0; i<3; i++) {
+      this.numberOf += 1;
+      this.pipes.push({
+      number: this.numberOf,
+      x: 500 + 600 * this.numberOf,
+      hole: Math.random() * ((height - game.holeHeight/2) - (game.holeHeight/2 + 20)) + (game.holeHeight/2 + 20)
+      });
     }
   },
-  ifNotDead: function() {
-    if(licorne.x > pipe1.x-licorne.taille/2 && licorne.x < pipe1.x+50+licorne.taille/2) {
-      if((licorne.y-licorne.taille/2 < pipe1.hole - game.holeHeight/2) || (licorne.y+licorne.taille/2 > pipe1.hole + game.holeHeight/2)) {
-        game.state = 3;
-        game.timeWhenLost = game.fullTime;
-      }
+  moving: function() {
+    for (var i=0; i<3; i++) {
+      this.pipes[i].x -= game.speed;
     }
-    if(licorne.x > pipe2.x-licorne.taille/2 && licorne.x < pipe2.x+50+licorne.taille/2) {
-      if((licorne.y-licorne.taille/2 < pipe2.hole - game.holeHeight/2) || (licorne.y+licorne.taille/2 > pipe2.hole + game.holeHeight/2)) {
-        game.state = 3;
-        game.timeWhenLost = game.fullTime;
-      }
-    }
-    if(licorne.x > pipe3.x-licorne.taille/2 && licorne.x < pipe3.x+50+licorne.taille/2) {
-      if((licorne.y-licorne.taille/2 < pipe3.hole - game.holeHeight/2) || (licorne.y+licorne.taille/2 > pipe3.hole + game.holeHeight/2)) {
-        game.state = 3;
-        game.timeWhenLost = game.fullTime;
-      }
-    }
-  }, 
-  ifPipeAway: function() {
-    if(pipe1.x < -200) { 
-      pipe1.x = 1600;
-      pipe1.hole = Math.random() * ((height - game.holeHeight/2) - (game.holeHeight/2 + 20)) + (game.holeHeight/2 + 20);
-    }
-    if(pipe2.x < -200) { 
-      pipe2.x = 1600;
-      pipe2.hole = Math.random() * ((height - game.holeHeight/2) - (game.holeHeight/2 + 20)) + (game.holeHeight/2 + 20);
-    }
-    if(pipe3.x < -200) {
-      pipe3.x = 1600;
-      pipe3.hole = Math.random() * ((height - game.holeHeight/2) - (game.holeHeight/2 + 20)) + (game.holeHeight/2 + 20);
-    }
-  }
-}
-
-function Pipe() {
-  game.numberOfPipes += 1;
-  this.x = 500 + 600 * game.numberOfPipes;
-  this.hole = Math.random() * ((height - game.holeHeight/2) - (game.holeHeight/2 + 20)) + (game.holeHeight/2 + 20);
-  
-  this.afficherPipe = function() {
+  },
+  displayPipes: function() {
     fill(0);
-    rect(this.x,0,50,this.hole-game.holeHeight/2);
-    rect(this.x,this.hole+game.holeHeight/2,50,height-this.hole-game.holeHeight/2);
+    for(var i=0; i<3; i++) {
+      rect(this.pipes[i].x,0,50,this.pipes[i].hole-game.holeHeight/2);
+      rect(this.pipes[i].x,this.pipes[i].hole+game.holeHeight/2,50,height-this.pipes[i].hole-game.holeHeight/2);
+    }
     fill(255);
+  },
+  checkIfPipeAway: function() {
+    if(this.pipes[0].x < -200) {
+      this.pipes.splice(0,1);
+      this.numberOf += 1;
+      this.pipes.push({
+      number: this.numberOf,
+      x: 1600,
+      hole: Math.random() * ((height - game.holeHeight/2) - (game.holeHeight/2 + 20)) + (game.holeHeight/2 + 20)
+      });
+    }
+  },
+  checkIfNotDead: function() {
+    if(licorne.x > this.pipes[0].x-licorne.taille/2 && licorne.x < this.pipes[0].x+50+licorne.taille/2) {
+      if((licorne.y-licorne.taille/2 < this.pipes[0].hole - game.holeHeight/2) || (licorne.y+licorne.taille/2 > this.pipes[0].hole + game.holeHeight/2)) {
+        game.state = 3;
+        game.timeWhenLost = game.fullTime;
+      }
+    }
   }
 }
 
-// Images
 var clouds, flap, intro, perdu;
 
-// Préchargement
 function preload() {
   clouds = loadImage('images/clouds.jpg');
   flap = loadImage('images/flapflap.png');
@@ -116,31 +102,22 @@ function preload() {
   perdu = loadImage('images/perdu.png');
 }
 
-// Premier affichage du programme
 function setup() {
   createCanvas(800,500); // Affichage de la fenêtre
   imageMode(CENTER); // Centrage des images
   noStroke();
 
-  // Propriétés du texte
   textAlign(CENTER);
   textStyle(BOLD);
   fill(255);
 
   game.init();
-
-  // Pipes
-  pipe1 = new Pipe();
-  pipe2 = new Pipe();
-  pipe3 = new Pipe();
 }
 
-// Fonction répétée 30 fois par secondes
 function draw() {
-  image(clouds, width/2, height/2, width, height); // Fond d'écran nuages
-  game.time+=1; // Temps à 30 images/secondes
+  image(clouds, width/2, height/2, width, height);
+  game.time += 1;
   
-
   switch(game.state) {
   case 0: // Acceuil du jeu
     image(intro, width/2, height/2, width, height);
@@ -158,20 +135,16 @@ function draw() {
     }
     licorne.afficher();
      
-    pipe1.afficherPipe();
-    pipe2.afficherPipe();
-    pipe3.afficherPipe();
+    pipes.displayPipes();
     
     check.score();
     textSize(50);
-    text(game.score, 95*width/100, 60);
+    text(game.score, 95*width/100, 55);
     
-    pipe1.x -= game.speed;
-    pipe2.x -= game.speed;
-    pipe3.x -= game.speed;
+    pipes.moving();
     
-    check.ifNotDead();
-    check.ifPipeAway();
+    pipes.checkIfNotDead();
+    pipes.checkIfPipeAway();
     
     game.fullTime += 1;
     game.decreasingHoleHeight();
@@ -186,7 +159,6 @@ function draw() {
   }
 }
 
-// Fonction qui s'active quand on appuie sur une touche
 function keyPressed() {
   switch(game.state) {
   case 0: // Acceuil du jeu
@@ -209,22 +181,11 @@ function keyPressed() {
     if(game.timeWhenLost+20 < game.fullTime) {
       game.state = 1;
       game.init();
-      
-      game.numberOfPipes = 1;
-      pipe1.x = 200 + 600 * game.numberOfPipes;
-      game.numberOfPipes += 1
-      pipe2.x = 200 + 600 * game.numberOfPipes;
-      game.numberOfPipes += 1
-      pipe3.x = 200 + 600 * game.numberOfPipes;
-      pipe1.hole = Math.random() * ((height - game.holeHeight/2) - (game.holeHeight/2 + 20)) + (game.holeHeight/2 + 20);
-      pipe2.hole = Math.random() * ((height - game.holeHeight/2) - (game.holeHeight/2 + 20)) + (game.holeHeight/2 + 20);
-      pipe3.hole = Math.random() * ((height - game.holeHeight/2) - (game.holeHeight/2 + 20)) + (game.holeHeight/2 + 20);
       break;
     }
   }
 }
 
-// Compatibilité smartphones et clic de souris
 function touchStarted() { 
   keyPressed();
 }
